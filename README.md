@@ -1,4 +1,7 @@
-# ClarityAI Extension (Dark Mode Theme)
+## ❗Note this extension was build on gemini-1.5-flash but now it is no longer available so we need to update to latest version gemini-2.5-flash (JAN 2026).
+## If you are already using this then download the new version or go to code using any IDE platform like VScode search for gemini-1.5-flash replace with gemini-2.5-flash then from browser reload or remove old one and unpack this extension again.❗
+
+# ClarityAI Extension (Dark Mode)
 
 ![SmartSummarizer Logo](SmartSummarizer%20Logo%20with%20Paper%20and%20Digital%20Interface.png)
 
@@ -16,16 +19,16 @@ A Chrome extension that uses Google's Gemini AI to summarize web pages.
 - 🔧 Customizable settings
 - 🧪 API key testing functionality
 
-## Setup Instructions :
+## Setup Instructions
 
-### 1. Get a Gemini API Key
+### 1. Get a Gemini API Key :
 
 1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
 2. Sign in with your Google account
 3. Click "Create API Key"
 4. Copy the generated API key (starts with "AIza...")
 
-### 2. Install the Extension
+### 2. Install the Extension :
 
 1. Download or clone this repository
 2. Open Chrome and go to `chrome://extensions/`
@@ -33,7 +36,7 @@ A Chrome extension that uses Google's Gemini AI to summarize web pages.
 4. Click "Load unpacked" and select the extension folder
 5. *Only if you didnot find it you can see any YouTube video to know you browser settings
 
-### 3. Configure the Extension
+### 3. Configure the Extension :
 
 1. Click the ClarityAI extension icon in your toolbar
 2. Click "Settings" in the popup
@@ -41,7 +44,7 @@ A Chrome extension that uses Google's Gemini AI to summarize web pages.
 4. Click "Test API Key" to verify it works
 5. Click "Save"
 
-### 4. Use the Extension
+### 4. Use the Extension :
 
 - **Auto-summarize**: Click the extension icon to automatically summarize the current page
 - **Context menu**: Right-click on any page and select "Summarize this page with ClarityAI"
