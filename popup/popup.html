@@ -1,38 +1,113 @@
 <!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ClarityAI</title>
-    <link rel="stylesheet" href="../styles/global.css" />
-    <link rel="stylesheet" href="popup.css" />
-  </head>
-  <body>
-    <div class="container">
-      <div class="header">
-        <h1 id="title">ClarityAI</h1>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClarityAI — Universal Consultation & Summarizer</title>
+  <link rel="stylesheet" href="../styles/global.css" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+
+<body>
+  <div class="popup-container">
+    <!-- Top Header -->
+    <header class="popup-header">
+      <div class="header-left">
+        <img src="../SmartSummarizer Logo with Paper and Digital Interface.png" alt="ClarityAI" class="header-logo" />
+        <div class="header-titles">
+          <span class="app-name">ClarityAI</span>
+          <span class="app-tagline">Universal AI Consultant</span>
+        </div>
       </div>
-      <div class="controls">
-        <select id="summaryStyle" class="summary-style-select">
-          <option value="short">Short Summary</option>
-          <option value="bullets">Bullet Points</option>
-          <option value="detailed">Detailed Summary</option>
-        </select>
-        <button id="summarize" class="btn primary">Summarize</button>
+      <div class="header-right">
+        <button id="providerPill" class="provider-pill" title="Click to change model or provider">
+          <span class="pill-dot"></span>
+          <span id="pillText">Loading...</span>
+        </button>
+        <button id="openSettingsBtn" class="icon-btn" title="Settings">⚙️</button>
       </div>
-      <div class="button-group">
-        <button id="extractText" class="btn">Extract Text</button>
-        <button id="testApi" class="btn">Test API</button>
+    </header>
+
+    <!-- Style & Control Bar -->
+    <div class="controls-card">
+      <div class="controls-row">
+        <div class="select-wrap">
+          <select id="summaryStyle" class="styled-select">
+            <option value="short">⚡ Executive Brief (TL;DR)</option>
+            <option value="bullets" selected>📌 Key Takeaways (Bullets)</option>
+            <option value="detailed">📊 Deep Dive Consultation</option>
+            <option value="actionable">✅ Actionable Checklist</option>
+          </select>
+        </div>
+        <button id="summarizeBtn" class="btn-summarize">
+          <span class="btn-icon">✨</span>
+          <span id="summarizeBtnText">Summarize</span>
+        </button>
       </div>
-      <pre id="output" class="output">No summary yet.</pre>
-      <div class="button-group">
-        <button id="copySummary" class="btn">Copy Summary</button>
-      </div>
-      <div class="links">
-        <a href="#" id="openOptions">Settings</a>
+
+      <!-- Optional Focus Accordion -->
+      <div class="focus-bar">
+        <input type="text" id="customFocusInput" class="focus-input" placeholder="Custom focus (optional, e.g. financial data, tech specs...)" />
       </div>
     </div>
-    <script src="popup.js"></script>
-  </body>
-  </html>
 
+    <!-- Output Box Area -->
+    <main class="output-wrapper">
+      <div class="output-header" id="outputMetaBar" style="display: none;">
+        <span class="meta-item" id="metaTitle">Page Title</span>
+        <span class="meta-tag" id="metaModel">Model</span>
+      </div>
+
+      <div id="outputContent" class="output-content">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">📄</div>
+          <h3>Ready for Consultation</h3>
+          <p>Select your preferred consultation style above and click <strong>Summarize</strong> to analyze the active tab.</p>
+        </div>
+      </div>
+
+      <!-- Loading Overlay -->
+      <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="pulse-spinner"></div>
+        <p id="loadingStatusText">Analyzing page content...</p>
+        <span class="loading-sub">Connecting with selected AI model</span>
+      </div>
+    </main>
+
+    <!-- Interactive Consultation Q&A -->
+    <div class="qa-section" id="qaSection" style="display: none;">
+      <div class="qa-input-wrap">
+        <input type="text" id="qaInput" placeholder="Ask a follow-up consultation question..." />
+        <button id="qaSendBtn" class="btn-send" title="Send question">➤</button>
+      </div>
+      <div id="qaAnswer" class="qa-answer" style="display: none;"></div>
+    </div>
+
+    <!-- Bottom Action Bar -->
+    <footer class="action-footer">
+      <div class="action-buttons-group">
+        <button id="copySummaryBtn" class="action-btn" title="Copy entire summary to clipboard">
+          <span class="action-btn-icon">📋</span>
+          <span id="copyBtnText">Copy All</span>
+        </button>
+        <button id="exportPdfBtn" class="action-btn action-btn-accent" title="Export as styled PDF document">
+          <span class="action-btn-icon">📄</span>
+          <span>Export PDF</span>
+        </button>
+        <button id="copyMarkdownBtn" class="action-btn" title="Copy as Markdown">
+          <span class="action-btn-icon">📝</span>
+          <span>Markdown</span>
+        </button>
+        <button id="extractTextBtn" class="action-btn" title="View raw extracted text">
+          <span class="action-btn-icon">🔍</span>
+          <span>Raw Text</span>
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+
+</html>

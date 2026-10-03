@@ -1,86 +1,105 @@
-## ❗Note this extension was build on gemini-1.5-flash but now it is no longer available so we need to update to latest version gemini-2.5-flash (JAN 2026).
-## If you are already using this then download the new version or go to code using any IDE platform like VScode search for gemini-1.5-flash replace with gemini-2.5-flash then from browser reload or remove old one and unpack this extension again.❗
-
-# ClarityAI Extension (Dark Mode)
+# ClarityAI — Universal AI Summarizer & Executive Consultant (Dark Mode)
 
 ![SmartSummarizer Logo](SmartSummarizer%20Logo%20with%20Paper%20and%20Digital%20Interface.png)
 
-A Chrome extension that uses Google's Gemini AI to summarize web pages.
+A modern, lightweight, privacy-focused Chrome Extension that delivers instant AI summarization, deep consultative analysis, interactive Q&A, and **one-click PDF export** for any web page or article.
 
-## What makes us different ?
+> **🚀 Universal AI Freedom:** No more hardcoded models or vendor lock-in! ClarityAI works with **any AI provider, any model version, and any API key** (free, paid, or private local LLMs). Zero coding required—everything is managed right from a sleek, intuitive dark-mode interface.
 
-- Our extension automatically saves your last summary locally, so you won’t need to reuse API tokens every time you close it. The saved summary remains available until you generate a new one
+---
 
-## Features
+## 🌟 What Makes ClarityAI Different?
 
-- 📄 Summarize any webpage with AI
-- 🎯 Multiple summary styles (short, bullets, detailed)
-- 📋 Copy summaries to clipboard
-- 🔧 Customizable settings
-- 🧪 API key testing functionality
+- **🔓 100% Free & Universal:** Choose from completely free providers like **Groq** (blazing fast Llama 3.3 70B & DeepSeek R1), **Google Gemini** (Gemini 2.5 Flash), or **OpenRouter** (200+ models with `:free` tiers), or connect paid flagships like **OpenAI (GPT-4o)**, **Anthropic Claude (3.5/3.7 Sonnet)**, or private **local Ollama / LM Studio** servers.
+- **⚙️ Never Bound to a Single Version:** Enter or select *any* model name or version identifier directly in the UI. When new models launch, simply type the model string in Settings—no manual code editing ever!
+- **📄 One-Click PDF Export:** Export your generated intelligence briefs into beautifully styled, professional PDF documents complete with metadata, headers, source links, and clear typography.
+- **📋 Complete One-Click Copy:** Copy plain text or raw formatted Markdown for your notes, Notion, Obsidian, or team chats with instant visual confirmation.
+- **💡 4 Tailored Consultation Styles:**
+  - **⚡ Executive Brief (TL;DR):** 3–4 punchy sentences capturing core substance and conclusion.
+  - **📌 Key Takeaways (Bullets):** 5–8 high-impact points with bold headlines.
+  - **📊 Deep Dive Consultation:** 4-part strategic analysis (Overview, Core Arguments, Critical Implications, and Strategic Recommendations).
+  - **✅ Actionable Steps & Checklist:** Concrete tasks, implementation points, and next steps.
+- **💬 Interactive Follow-Up Q&A:** Ask questions about the page content directly in the popup for instant interactive consultation.
+- **💾 Local Caching:** Automatically persists your previous summary and metadata locally so closing the popup never wastes API tokens or loses your work.
+- **🔒 100% Client-Side Privacy:** Your API keys and page data remain securely stored inside your browser. No middleman servers.
 
-## Setup Instructions
+---
 
-### 1. Get a Gemini API Key :
+## 🔑 Supported Providers & Free API Key Guide
 
-1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Sign in with your Google account
-3. Click "Create API Key"
-4. Copy the generated API key (starts with "AIza...")
+ClarityAI includes built-in presets and step-by-step guidance for all major providers:
 
-### 2. Install the Extension :
+| Provider | Pricing / Tier | Recommended Models | Where to Get Your Key |
+| :--- | :--- | :--- | :--- |
+| **Groq** | **100% Free & Ultra-Fast** | `llama-3.3-70b-versatile`<br/>`deepseek-r1-distill-llama-70b` | [Groq Console](https://console.groq.com/keys) |
+| **Google Gemini** | **Free Tier Available** | `gemini-2.5-flash`<br/>`gemini-2.5-pro` | [Google AI Studio](https://aistudio.google.com/app/apikey) |
+| **OpenRouter** | **Free & Paid (200+ Models)** | `meta-llama/llama-3.3-70b-instruct:free`<br/>`deepseek/deepseek-r1:free` | [OpenRouter Keys](https://openrouter.ai/keys) |
+| **OpenAI** | Paid API | `gpt-4o-mini`, `gpt-4o`, `o3-mini` | [OpenAI Platform](https://platform.openai.com/api-keys) |
+| **Anthropic Claude** | Paid API | `claude-3-5-haiku`, `claude-3-7-sonnet` | [Anthropic Console](https://console.anthropic.com/settings/keys) |
+| **DeepSeek** | Ultra Low Cost API | `deepseek-chat` (V3), `deepseek-reasoner` (R1) | [DeepSeek Platform](https://platform.deepseek.com/api_keys) |
+| **Custom / Local** | **100% Free & Private** | `llama3`, `mistral`, `deepseek-r1`, `qwen2.5` | [Ollama](https://ollama.com) / LM Studio |
 
-1. Download or clone this repository
-2. Open Chrome and go to `chrome://extensions/`
-3. Enable "Developer mode" (toggle in top right)
-4. Click "Load unpacked" and select the extension folder
-5. *Only if you didnot find it you can see any YouTube video to know you browser settings
+> **Tip for Free Use:** If you don't want to spend money on API credits, grab a free key from **[Groq](https://console.groq.com/keys)** or **[Google AI Studio](https://aistudio.google.com/app/apikey)** in under 60 seconds!
 
-### 3. Configure the Extension :
+---
 
-1. Click the ClarityAI extension icon in your toolbar
-2. Click "Settings" in the popup
-3. Paste your Gemini API key in the "Gemini API Key" field
-4. Click "Test API Key" to verify it works
-5. Click "Save"
+## 🛠️ Installation & Setup
 
-### 4. Use the Extension :
+### 1. Install the Extension in Chrome / Edge / Brave
 
-- **Auto-summarize**: Click the extension icon to automatically summarize the current page
-- **Context menu**: Right-click on any page and select "Summarize this page with ClarityAI"
-- **Selected text**: Select text on a page, right-click, and choose the summarize option
+1. Download or clone this repository:
+   ```bash
+   git clone https://github.com/SudiptaSanki/ClarityAI-extension-Dark-Mode-Theme.git
+   ```
+2. Open your Chromium browser and navigate to:
+   ```
+   chrome://extensions/
+   ```
+3. Enable **Developer mode** (toggle located in top-right corner).
+4. Click **Load unpacked** and select the extension directory.
 
-## Troubleshooting
+### 2. Configure Your Provider & API Key
 
-### "No summary yet" or "Please set your Gemini API key"
+1. Click the **ClarityAI** icon in your browser toolbar (pin it for quick access).
+2. Click the **Settings (⚙️)** icon or the provider pill at the top of the popup.
+3. Select your desired AI provider (e.g., *Groq*, *Google Gemini*, or *OpenRouter*).
+4. Paste your API key into the key field.
+5. Select a preset model or choose **⚙️ Custom Model Version...** to specify any custom model identifier.
+6. Click **⚡ Test Connection** to verify that your key and model are authenticated.
+7. Click **💾 Save Settings**.
 
-- Make sure you've added your API key in the Settings page
-- Verify the API key is correct by using the "Test API Key" button
-- Check that you have an active internet connection
+---
 
-### API Key Errors
+## 🚀 How to Use
 
-- Ensure your API key is valid and not expired
-- Check that you have sufficient quota on your Google AI Studio account
-- Verify the API key starts with "AIza..."
+- **Popup Summarization:** Click the extension icon on any article or webpage, pick your consultation style, and click **✨ Summarize**.
+- **Context Menu:** Right-click anywhere on a webpage and click **Summarize with ClarityAI**.
+- **Selected Text Only:** Highlight any specific passage on a page, right-click, and summarize just that excerpt.
+- **Exporting Intelligence:**
+  - Click **📄 Export PDF** to download a formatted, multi-page executive PDF brief.
+  - Click **📋 Copy All** to copy the formatted summary text to your clipboard.
+  - Click **📝 Markdown** to copy with full headers and bullet formatting.
+- **Interactive Consultation:** Type a question in the bottom box (e.g., *"What are the key statistical figures mentioned?"*) and receive an immediate AI response grounded in the page's content.
 
-### Extension Not Working
+---
 
-- Most common error is when you cannot summarize any more that means you have used up all free tokens. Then either wait for next day or you can create new API Key (From another Gemini account)
-- Try reloading the extension in `chrome://extensions/`
-- Check the browser console for error messages
-- Ensure the extension has permission to access the current page
+## 🧪 Testing the Extension
 
-## Privacy
+A complete test page is included in the extension:
+1. Open `test-page.html` in your browser.
+2. Open the ClarityAI popup and click **✨ Summarize** to test content extraction, AI processing, and formatting.
+3. Test exporting to PDF and copying the results.
 
-- Your API key is stored locally in your browser so nothing to worry no one can see it)
-- Page content is sent to Google's Gemini API for summarization
-- No data is stored on external servers
+---
 
-## Support
+## 🔒 Privacy & Security
 
-If you encounter issues:
-1. Check the browser console for error messages
-2. Verify your API key is working (Use Test API button from extension)
-3. Try reloading the extension
-4. Check that the target website allows content extraction
+- **No Remote Tracking:** All settings and API keys are stored locally on your device via Chrome's secure storage API (`chrome.storage.local`).
+- **Direct Communication:** Summarization requests are sent directly from your browser to the chosen AI provider's official endpoint.
+- **Local PDF Rendering:** PDF creation happens entirely client-side using native JavaScript without any third-party external CDN scripts or remote data transmission.
+
+---
+
+## 🤝 Contributing
+
+Contributions, feedback, and suggestions are welcome! Feel free to open issues or submit pull requests.

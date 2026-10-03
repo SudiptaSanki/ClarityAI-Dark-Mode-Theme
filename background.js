@@ -1,271 +1,374 @@
-// Registers context menu and handles summarize requests
-chrome.runtime.onInstalled.addListener(() => {
+// ClarityAI Background Service Worker (Manifest V3 Module)
+import { AI_PROVIDERS, executeAICall, testConnection } from "./utils/ai-providers.js";
+import { buildConsultationPrompt, buildFollowUpPrompt } from "./utils/summarizer.js";
+
+// Initialize extension defaults and context menu
+chrome.runtime.onInstalled.addListener(async () => {
   chrome.contextMenus.create({
     id: "ClarityAI-summarize",
-    title: "Summarize this page with ClarityAI",
+    title: "Summarize with ClarityAI",
     contexts: ["page", "selection"]
   });
+
+  // Check and migrate existing settings if needed
+  const storage = await chrome.storage.local.get(null);
+  const updates = {};
+
+  if (!storage.provider) {
+    // If user already had a geminiApiKey, default to gemini; otherwise groq or gemini
+    updates.provider = storage.geminiApiKey ? "gemini" : "groq";
+  }
+
+  // Ensure apiKeys structure exists and migrate legacy keys
+  const apiKeys = storage.apiKeys || {};
+  if (storage.geminiApiKey && !apiKeys.gemini) {
+    apiKeys.gemini = storage.geminiApiKey;
+    updates.apiKeys = apiKeys;
+  }
+  if (!storage.apiKeys) {
+    updates.apiKeys = apiKeys;
+  }
+
+  // Ensure models structure exists
+  const models = storage.models || {};
+  if (!models.gemini || models.gemini === "gemini-2.5-flash" || models.gemini === "gemini-1.5-flash") {
+    models.gemini = "gemini-flash-latest";
+    updates.models = models;
+  }
+  if (!storage.models) {
+    updates.models = {
+      gemini: "gemini-flash-latest",
+      groq: "llama-3.3-70b-versatile",
+      openrouter: "meta-llama/llama-3.3-70b-instruct:free",
+      openai: "gpt-4o-mini",
+      anthropic: "claude-3-5-haiku-latest",
+      deepseek: "deepseek-chat",
+      custom: "llama3"
+    };
+  }
+
+  if (!storage.summaryStyle) {
+    updates.summaryStyle = "short";
+  }
+
+  if (Object.keys(updates).length > 0) {
+    await chrome.storage.local.set(updates);
+  }
 });
 
+// Context menu click handler
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId !== "ClarityAI-summarize" || !tab?.id) return;
   try {
-    const [{ result: pageText }] = await chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      func: () => {
-        const selection = window.getSelection?.()?.toString();
-        if (selection && selection.trim().length > 0) return selection.trim();
-        
-        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-        const parts = [];
-        let node;
-        const maxChars = 100000;
-        while ((node = walker.nextNode())) {
-          const text = node.nodeValue?.replace(/\s+/g, " ").trim();
-          if (text) {
-            parts.push(text);
-            if (parts.join(" ").length > maxChars) break;
-          }
-        }
-        return parts.join(" ");
-      }
+    await chrome.storage.local.set({ isSummarizing: true });
+
+    const pageData = await extractTabContent(tab.id);
+    if (!pageData || !pageData.text || pageData.text.length === 0) {
+      throw new Error("No readable text found on this page.");
+    }
+
+    const settings = await getActiveAISettings();
+    const { systemPrompt, userPrompt } = buildConsultationPrompt({
+      title: pageData.title,
+      url: pageData.url,
+      text: pageData.text,
+      style: settings.summaryStyle || "short",
+      customFocus: ""
     });
 
-    const { summaryStyle = "short" } = await chrome.storage.local.get(["summaryStyle"]) || {};
-    const summary = await summarizeWithAI(pageText, summaryStyle);
-    await chrome.storage.local.set({ lastSummary: summary });
+    const summary = await executeAICall({
+      provider: settings.provider,
+      apiKey: settings.apiKey,
+      model: settings.model,
+      customEndpoint: settings.customEndpoint,
+      systemPrompt,
+      userPrompt,
+      temperature: 0.2
+    });
+
+    await chrome.storage.local.set({
+      lastSummary: summary,
+      lastTitle: pageData.title,
+      lastUrl: pageData.url,
+      lastProvider: settings.provider,
+      lastModel: settings.model,
+      lastStyle: settings.summaryStyle || "short",
+      lastPageText: pageData.text.substring(0, 15000),
+      lastTimestamp: new Date().toISOString(),
+      isSummarizing: false
+    });
+
     if (tab.id) {
       chrome.action.openPopup?.();
     }
   } catch (error) {
-    const message = formatErrorMessage(error);
-    console.error("Summarize error", message);
-    await chrome.storage.local.set({ lastSummary: message });
-  }
-});
-
-async function summarizeWithAI(text, summaryStyle = "short") {
-  try {
-    const {
-      model = "gemini-2.5-flash",
-      geminiApiKey = ""
-    } = (await chrome.storage.local.get([
-      "model",
-      "geminiApiKey"
-    ])) || {};
-
-    if (!geminiApiKey) {
-      throw new Error(`Set your Gemini API key in Settings to use ClarityAI.`);
-    }
-    
-    if (!text || text.trim().length === 0) {
-      throw new Error("No text provided for summarization.");
-    }
-    
-    console.log("Building prompt for text length:", text.length);
-    const prompt = buildPrompt(text, summaryStyle);
-    console.log("Prompt built, calling Gemini API");
-    
-    const result = await summarizeWithGemini({ prompt, model, apiKey: geminiApiKey });
-    console.log("Gemini API call successful, result length:", result?.length || 0);
-    
-    return result;
-  } catch (error) {
-    console.error("Error in summarizeWithAI:", error);
-    throw error;
-  }
-}
-
-// Rate limiting to prevent 429 errors
-let lastRequestTime = 0;
-const MIN_REQUEST_INTERVAL = 2000; // Increased to 2 seconds between requests
-const MAX_RETRIES = 3;
-
-async function summarizeWithGemini({ prompt, model, apiKey, retryCount = 0 }) {
-  // Add delay if needed to prevent rate limiting
-  const now = Date.now();
-  const timeSinceLastRequest = now - lastRequestTime;
-  if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
-    const delay = MIN_REQUEST_INTERVAL - timeSinceLastRequest;
-    await new Promise(resolve => setTimeout(resolve, delay));
-  }
-  lastRequestTime = Date.now();
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
-  
-  const requestBody = {
-    contents: [
-      {
-        parts: [
-          { text: `You are a helpful assistant that summarizes web pages succinctly.\n\n${prompt}` }
-        ]
-      }
-    ],
-    generationConfig: { temperature: 0.2 }
-  };
-  
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestBody)
+    console.error("Context menu summarization error:", error);
+    await chrome.storage.local.set({
+      lastSummary: `❌ Error: ${error.message}`,
+      isSummarizing: false
     });
-    
-    if (!response.ok) {
-      let details = "";
-      try {
-        const err = await response.json();
-        details = err?.error?.message || JSON.stringify(err);
-      } catch (_) {
-        details = await response.text();
-      }
-      
-      if (response.status === 429 && retryCount < MAX_RETRIES) {
-        // Wait longer and retry for rate limiting
-        const waitTime = Math.pow(2, retryCount + 1) * 1000; // Exponential backoff
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-        return summarizeWithGemini({ prompt, model, apiKey, retryCount: retryCount + 1 });
-      } else if (response.status === 429) {
-        throw new Error("Rate limit exceeded. Please wait a few minutes and try again.");
-      } else if (response.status === 403) {
-        throw new Error("API key is invalid or doesn't have access to this model.");
-      } else if (response.status === 400) {
-        throw new Error("Invalid request. Please check your API key and model settings.");
-      } else {
-        throw new Error(`Gemini error (${response.status}): ${details}`);
-      }
+  }
+});
+
+// Message listener for popup and options communications
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type === "SUMMARIZE_ACTIVE_TAB") {
+    handleSummarizeActiveTab(message)
+      .then(sendResponse)
+      .catch(err => sendResponse({ error: err.message }));
+    return true; // asynchronous response
+  }
+
+  if (message?.type === "ASK_CONSULTATION") {
+    handleConsultationQuestion(message)
+      .then(sendResponse)
+      .catch(err => sendResponse({ error: err.message }));
+    return true;
+  }
+
+  if (message?.type === "TEST_API") {
+    handleTestApi(message)
+      .then(sendResponse)
+      .catch(err => sendResponse({ error: err.message }));
+    return true;
+  }
+
+  if (message?.type === "GET_ACTIVE_SETTINGS") {
+    getActiveAISettings()
+      .then(sendResponse)
+      .catch(err => sendResponse({ error: err.message }));
+    return true;
+  }
+});
+
+/**
+ * Handle Summarize Active Tab Request
+ */
+async function handleSummarizeActiveTab(message) {
+  try {
+    await chrome.storage.local.set({ isSummarizing: true, summarizingStartTime: Date.now() });
+
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab?.id) {
+      throw new Error("No active browser tab detected.");
     }
-    
-    const data = await response.json();
-    
-    if (!data?.candidates || data.candidates.length === 0) {
-      throw new Error("No response from Gemini API.");
+
+    const pageData = await extractTabContent(tab.id);
+    if (!pageData || !pageData.text || pageData.text.trim().length === 0) {
+      throw new Error("No readable text found on this page to analyze.");
     }
-    
-    const candidate = data.candidates[0];
-    
-    if (candidate?.finishReason === "SAFETY") {
-      throw new Error("Gemini blocked the response due to safety filters.");
-    }
-    
-    const parts = candidate?.content?.parts || [];
-    const text = parts.map(p => p?.text || "").join("").trim();
-    
-    if (!text) {
-      throw new Error("No summary text returned by Gemini.");
-    }
-    
-    return text;
+
+    const settings = await getActiveAISettings();
+    const style = message.summaryStyle || settings.summaryStyle || "short";
+    const customFocus = message.customFocus || "";
+
+    const { systemPrompt, userPrompt } = buildConsultationPrompt({
+      title: pageData.title,
+      url: pageData.url,
+      text: pageData.text,
+      style: style,
+      customFocus: customFocus
+    });
+
+    const summary = await executeAICall({
+      provider: settings.provider,
+      apiKey: settings.apiKey,
+      model: settings.model,
+      customEndpoint: settings.customEndpoint,
+      systemPrompt,
+      userPrompt,
+      temperature: settings.temperature || 0.2
+    });
+
+    const record = {
+      lastSummary: summary,
+      lastTitle: pageData.title,
+      lastUrl: pageData.url,
+      lastProvider: settings.provider,
+      lastModel: settings.model,
+      lastStyle: style,
+      lastPageText: pageData.text.substring(0, 15000),
+      lastWordCount: pageData.wordCount,
+      lastTimestamp: new Date().toISOString(),
+      isSummarizing: false
+    };
+
+    await chrome.storage.local.set(record);
+
+    return {
+      summary,
+      title: pageData.title,
+      url: pageData.url,
+      provider: settings.provider,
+      model: settings.model,
+      wordCount: pageData.wordCount
+    };
   } catch (error) {
+    await chrome.storage.local.set({ isSummarizing: false });
     throw error;
   }
 }
 
-function buildPrompt(text, style) {
-  const truncated = text.length > 12000 ? text.slice(0, 12000) : text;
-  const styleInstructions = {
-    short: "Provide a concise 3-5 sentence summary.",
-    bullets: "Provide 5-8 bullet points of key takeaways.",
-    detailed: "Provide a detailed summary focusing on key arguments and conclusions."
-  }[style] || "Provide a concise summary.";
-  return `${styleInstructions}\n\nText:\n${truncated}`;
+/**
+ * Handle Interactive Consultation Follow-up
+ */
+async function handleConsultationQuestion(message) {
+  const { question, contextSummary = "", pageText = "" } = message;
+  if (!question || !question.trim()) {
+    throw new Error("Please enter a question to ask.");
+  }
+
+  const settings = await getActiveAISettings();
+  const { systemPrompt, userPrompt } = buildFollowUpPrompt({
+    contextSummary,
+    pageText,
+    question: question.trim()
+  });
+
+  const answer = await executeAICall({
+    provider: settings.provider,
+    apiKey: settings.apiKey,
+    model: settings.model,
+    customEndpoint: settings.customEndpoint,
+    systemPrompt,
+    userPrompt,
+    temperature: 0.3
+  });
+
+  return { answer };
 }
 
-// Listen for messages from popup to trigger summarize
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
-  if (message?.type === "TEST_API") {
-    try {
-      const { apiKey, model = "gemini-2.5-flash" } = message;
-      
-      if (!apiKey) {
-        return sendResponse({ error: "No API key provided" });
-      }
-      
-      const testResult = await summarizeWithGemini({ 
-        prompt: "Please respond with 'API test successful' if you can see this message.", 
-        model, 
-        apiKey 
-      });
-      
-      sendResponse({ result: testResult });
-    } catch (e) {
-      sendResponse({ error: e.message });
-    }
-    return true; // async response
+/**
+ * Handle Test API connection
+ */
+async function handleTestApi(message) {
+  const { provider, apiKey, model, customEndpoint } = message;
+  return await testConnection({ provider, apiKey, model, customEndpoint });
+}
+
+/**
+ * Helper to retrieve active provider, model, endpoint, and key
+ */
+async function getActiveAISettings() {
+  const storage = await chrome.storage.local.get([
+    "provider",
+    "apiKeys",
+    "geminiApiKey",
+    "models",
+    "customModel",
+    "customEndpoints",
+    "summaryStyle",
+    "temperature"
+  ]);
+
+  const provider = storage.provider || (storage.geminiApiKey ? "gemini" : "groq");
+  const providerDef = AI_PROVIDERS[provider] || AI_PROVIDERS.gemini;
+
+  // Retrieve API key for active provider
+  const apiKeys = storage.apiKeys || {};
+  let apiKey = apiKeys[provider] || "";
+  if (!apiKey && provider === "gemini" && storage.geminiApiKey) {
+    apiKey = storage.geminiApiKey;
   }
-  
-  if (message?.type === "SUMMARIZE_ACTIVE_TAB") {
-    try {
-      console.log("Received SUMMARIZE_ACTIVE_TAB message");
-      
-      // Set summarization in progress
-      await chrome.storage.local.set({ isSummarizing: true });
-      
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (!tab?.id) {
-        console.error("No active tab found");
-        await chrome.storage.local.set({ isSummarizing: false });
-        return sendResponse({ error: "No active tab." });
+
+  // Retrieve model
+  const models = storage.models || {};
+  let model = models[provider] || providerDef.defaultModel;
+  if (storage.customModel && storage.customModel[provider]) {
+    model = storage.customModel[provider];
+  }
+
+  // Retrieve custom endpoint if defined
+  const customEndpoints = storage.customEndpoints || {};
+  const customEndpoint = customEndpoints[provider] || providerDef.defaultEndpoint || "";
+
+  return {
+    provider,
+    providerName: providerDef.name,
+    apiKey,
+    model,
+    customEndpoint,
+    summaryStyle: storage.summaryStyle || "short",
+    temperature: typeof storage.temperature === "number" ? storage.temperature : 0.2
+  };
+}
+
+/**
+ * Robust in-page content extraction script executed on active tab
+ */
+async function extractTabContent(tabId) {
+  const [{ result }] = await chrome.scripting.executeScript({
+    target: { tabId },
+    func: () => {
+      const pageTitle = document.title || "Untitled Page";
+      const pageUrl = window.location.href || "";
+
+      // Check selection first
+      const selection = window.getSelection?.()?.toString()?.trim();
+      if (selection && selection.length > 25) {
+        return {
+          title: pageTitle,
+          url: pageUrl,
+          text: selection,
+          wordCount: selection.split(/\s+/).length
+        };
       }
-      
-      console.log("Executing script on tab:", tab.id);
-      const [{ result: pageText }] = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: () => {
-          const selection = window.getSelection?.()?.toString();
-          if (selection && selection.trim().length > 0) return selection.trim();
-          
-          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-          const parts = [];
-          let node;
-          const maxChars = 100000;
-          while ((node = walker.nextNode())) {
-            const text = node.nodeValue?.replace(/\s+/g, " ").trim();
-            if (text) {
-              parts.push(text);
-              if (parts.join(" ").length > maxChars) break;
+
+      // Filter tags that contain non-prose noise
+      const excludedTags = new Set([
+        "SCRIPT", "STYLE", "NOSCRIPT", "NAV", "HEADER", "FOOTER",
+        "ASIDE", "DIALOG", "IFRAME", "SVG", "CANVAS", "FORM", "BUTTON"
+      ]);
+
+      const container = document.querySelector("article, main, [role='main'], #content, .post-content") || document.body;
+
+      const walker = document.createTreeWalker(
+        container,
+        NodeFilter.SHOW_TEXT,
+        {
+          acceptNode(node) {
+            let parent = node.parentElement;
+            while (parent && parent !== container) {
+              if (excludedTags.has(parent.tagName)) {
+                return NodeFilter.FILTER_REJECT;
+              }
+              const classOrId = (parent.className || "") + " " + (parent.id || "");
+              if (/advertisement|ad-container|cookie|banner|sidebar|newsletter/i.test(classOrId)) {
+                return NodeFilter.FILTER_REJECT;
+              }
+              if (parent.style && (parent.style.display === "none" || parent.style.visibility === "hidden")) {
+                return NodeFilter.FILTER_REJECT;
+              }
+              parent = parent.parentElement;
             }
+            return NodeFilter.FILTER_ACCEPT;
           }
-          return parts.join(" ");
         }
-      });
-      
-      console.log("Extracted text length:", pageText?.length || 0);
-      if (!pageText || pageText.trim().length === 0) {
-        console.error("No text found on page");
-        await chrome.storage.local.set({ isSummarizing: false });
-        return sendResponse({ error: "No text found on this page to summarize." });
+      );
+
+      const parts = [];
+      let node;
+      let totalLength = 0;
+      const maxChars = 30000;
+
+      while ((node = walker.nextNode())) {
+        const text = node.nodeValue?.replace(/\s+/g, " ")?.trim();
+        if (text && text.length > 2) {
+          parts.push(text);
+          totalLength += text.length + 1;
+          if (totalLength > maxChars) break;
+        }
       }
-      
-      const summaryStyle = message.summaryStyle || (await chrome.storage.local.get(["summaryStyle"])).summaryStyle || "short";
-      console.log("Using summary style:", summaryStyle);
-      
-      console.log("Calling summarizeWithAI");
-      const summary = await summarizeWithAI(pageText, summaryStyle);
-      console.log("Summary generated, length:", summary?.length || 0);
-      
-      await chrome.storage.local.set({ lastSummary: summary, isSummarizing: false });
-      console.log("Sending response with summary");
-      sendResponse({ summary });
-      
-    } catch (e) {
-      console.error("Error in SUMMARIZE_ACTIVE_TAB handler:", e);
-      const errorMessage = formatErrorMessage(e);
-      await chrome.storage.local.set({ lastSummary: errorMessage, isSummarizing: false });
-      sendResponse({ error: errorMessage });
+
+      const fullText = parts.join("\n\n").trim();
+      return {
+        title: pageTitle,
+        url: pageUrl,
+        text: fullText,
+        wordCount: fullText ? fullText.split(/\s+/).length : 0
+      };
     }
-    return true; // async response
-  }
-});
+  });
 
-function formatErrorMessage(error) {
-  if (!error) return "Failed to generate summary.";
-  if (typeof error === "string") return error;
-  if (error?.message) return error.message;
-  try {
-    return JSON.stringify(error);
-  } catch (_) {
-    return "Failed to generate summary.";
-  }
+  return result;
 }
-

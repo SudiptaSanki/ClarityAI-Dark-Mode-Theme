@@ -1,54 +1,218 @@
 <!doctype html>
-<html>
+<html lang="en">
 
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ClarityAI Settings</title>
+  <title>ClarityAI Settings — Universal AI Configuration</title>
   <link rel="stylesheet" href="../styles/global.css" />
   <link rel="stylesheet" href="options.css" />
 </head>
 
 <body>
   <div class="container">
-    <div class="card">
-      <h1>Settings</h1>
-      <div class="grid">
-        <div class="row">
-          <label>Model</label>
-          <input id="model" placeholder="gemini-2.5-flash" />
+    <header class="app-header">
+      <div class="brand">
+        <img src="../SmartSummarizer Logo with Paper and Digital Interface.png" alt="ClarityAI Logo" class="brand-logo" />
+        <div>
+          <h1>ClarityAI Settings</h1>
+          <p class="subtitle">Universal AI Configuration — Use any provider, free or paid key, and any model version.</p>
         </div>
-        <div class="row">
-          <label>Summary style</label>
-          <select id="summaryStyle">
-            <option value="short">Short</option>
-            <option value="bullets">Bullets</option>
-            <option value="detailed">Detailed</option>
+      </div>
+    </header>
+
+    <div class="card main-card">
+      <div class="section-title">
+        <span class="step-num">1</span>
+        <h2>Choose Your AI Provider</h2>
+      </div>
+      <p class="section-desc">Select which AI service you want to use. We support free-tier providers (Groq, Gemini, OpenRouter), paid flagships (OpenAI, Claude, DeepSeek), and 100% private local models (Ollama).</p>
+
+      <div class="provider-grid" id="providerGrid">
+        <!-- Provider radio cards dynamically rendered or structured -->
+        <label class="provider-card" data-provider="gemini">
+          <input type="radio" name="providerSelect" value="gemini" />
+          <div class="card-content">
+            <div class="card-header">
+              <span class="provider-title">Google Gemini</span>
+              <span class="badge free">Free Tier</span>
+            </div>
+            <p class="card-desc">Google's fast, powerful multimodal AI. Free keys via Google AI Studio.</p>
+          </div>
+        </label>
+
+        <label class="provider-card" data-provider="groq">
+          <input type="radio" name="providerSelect" value="groq" />
+          <div class="card-content">
+            <div class="card-header">
+              <span class="provider-title">Groq</span>
+              <span class="badge badge-popular">100% Free & Fast</span>
+            </div>
+            <p class="card-desc">Blazing fast Llama 3.3 70B & DeepSeek R1 inference with free API access.</p>
+          </div>
+        </label>
+
+        <label class="provider-card" data-provider="openrouter">
+          <input type="radio" name="providerSelect" value="openrouter" />
+          <div class="card-content">
+            <div class="card-header">
+              <span class="provider-title">OpenRouter</span>
+              <span class="badge free">Free Models</span>
+            </div>
+            <p class="card-desc">Access 200+ models. Use zero-cost models tagged <code>:free</code>.</p>
+          </div>
+        </label>
+
+        <label class="provider-card" data-provider="openai">
+          <input type="radio" name="providerSelect" value="openai" />
+          <div class="card-content">
+            <div class="card-header">
+              <span class="provider-title">OpenAI</span>
+              <span class="badge paid">Paid</span>
+            </div>
+            <p class="card-desc">Industry standard GPT-4o, GPT-4o Mini, and reasoning models (o3-mini).</p>
+          </div>
+        </label>
+
+        <label class="provider-card" data-provider="anthropic">
+          <input type="radio" name="providerSelect" value="anthropic" />
+          <div class="card-content">
+            <div class="card-header">
+              <span class="provider-title">Anthropic Claude</span>
+              <span class="badge paid">Paid</span>
+            </div>
+            <p class="card-desc">High-precision analytical intelligence with Claude 3.5 Sonnet & Haiku.</p>
+          </div>
+        </label>
+
+        <label class="provider-card" data-provider="deepseek">
+          <input type="radio" name="providerSelect" value="deepseek" />
+          <div class="card-content">
+            <div class="card-header">
+              <span class="provider-title">DeepSeek</span>
+              <span class="badge paid">Ultra Low Cost</span>
+            </div>
+            <p class="card-desc">DeepSeek V3 Chat & R1 Reasoning models via official API.</p>
+          </div>
+        </label>
+
+        <label class="provider-card" data-provider="custom">
+          <input type="radio" name="providerSelect" value="custom" />
+          <div class="card-content">
+            <div class="card-header">
+              <span class="provider-title">Custom / Local</span>
+              <span class="badge free">100% Private</span>
+            </div>
+            <p class="card-desc">Connect to Ollama, LM Studio, vLLM, or any custom OpenAI-compatible endpoint.</p>
+          </div>
+        </label>
+      </div>
+
+      <!-- Provider Key Guidance Banner -->
+      <div class="guidance-box" id="guidanceBox">
+        <div class="guidance-icon">💡</div>
+        <div class="guidance-body">
+          <h4 id="guidanceTitle">How to get your API key</h4>
+          <p id="guidanceInstructions">Loading instructions...</p>
+          <a id="guidanceLink" href="#" target="_blank" class="guidance-btn">Get API Key ↗</a>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Step 2: Credentials & Model -->
+      <div class="section-title">
+        <span class="step-num">2</span>
+        <h2>API Key & Model Selection</h2>
+      </div>
+
+      <div class="form-grid">
+        <!-- API Key Input -->
+        <div class="form-group full-width">
+          <label for="apiKeyInput" id="apiKeyLabel">
+            API Key <span class="required" id="apiKeyRequired">*Required</span>
+          </label>
+          <div class="input-with-button">
+            <input type="password" id="apiKeyInput" placeholder="Paste your API key here..." autocomplete="off" />
+            <button type="button" id="toggleKeyVisibility" class="btn-icon" title="Toggle visibility">👁️</button>
+          </div>
+          <span class="input-help">Keys are securely stored strictly inside your browser's local storage and never transmitted to any third-party server.</span>
+        </div>
+
+        <!-- Model Selection Dropdown -->
+        <div class="form-group">
+          <label for="modelSelect">AI Model</label>
+          <select id="modelSelect">
+            <!-- Dynamically populated based on provider -->
           </select>
         </div>
-        <div class="row" style="grid-column: 1 / -1;">
-          <label>Gemini API Key <span style="color: #d93025;">*Required</span></label>
-          <input id="geminiApiKey" placeholder="AIza..." />
-          <div class="help-text">
-            <p>To get your API key:</p>
-            <ol>
-              <li>Go to <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a></li>
-              <li>Sign in with your Google account</li>
-              <li>Click "Create API Key"</li>
-              <li>Copy the key and paste it above</li>
-            </ol>
-            <p><strong>Note:</strong> The API key is stored locally in your browser and is not shared.</p>
+
+        <!-- Custom Model Input (Shown when "custom_input" is selected) -->
+        <div class="form-group" id="customModelGroup">
+          <label for="customModelInput">Custom Model Identifier</label>
+          <input type="text" id="customModelInput" placeholder="e.g. gemini-2.5-flash, llama-3.3-70b-versatile, gpt-4o" />
+          <span class="input-help">Enter any custom model or future version name.</span>
+        </div>
+
+        <!-- Custom Endpoint (Shown for 'custom' or expandable) -->
+        <div class="form-group full-width" id="endpointGroup">
+          <label for="customEndpointInput">API Endpoint Base URL</label>
+          <input type="text" id="customEndpointInput" placeholder="http://localhost:11434/v1/chat/completions" />
+          <span class="input-help">For Ollama use <code>http://localhost:11434/v1/chat/completions</code>. For LM Studio use <code>http://localhost:1234/v1/chat/completions</code>.</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Step 3: Consultation Preferences -->
+      <div class="section-title">
+        <span class="step-num">3</span>
+        <h2>Consultation & Summary Preferences</h2>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="defaultSummaryStyle">Default Consultation Style</label>
+          <select id="defaultSummaryStyle">
+            <option value="short">Executive Brief (TL;DR) — 3-4 sentences</option>
+            <option value="bullets">Key Takeaways (Bullets) — 5-8 structured points</option>
+            <option value="detailed">Deep Dive Consultation — Complete 4-part breakdown</option>
+            <option value="actionable">Actionable Steps & Checklist — Next actions</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="temperatureSlider">
+            Response Precision / Temperature: <span id="tempValue">0.2</span>
+          </label>
+          <input type="range" id="temperatureSlider" min="0.0" max="1.0" step="0.05" value="0.2" />
+          <div class="slider-labels">
+            <span>Focused & Factual (0.0)</span>
+            <span>Balanced (0.5)</span>
+            <span>Creative (1.0)</span>
           </div>
         </div>
       </div>
-      <div class="actions">
-        <button id="save">Save</button>
-        <button id="testKey">Test API Key</button>
-        <span id="status"></span>
+
+      <!-- Action Buttons & Status -->
+      <div class="footer-actions">
+        <div class="status-wrap">
+          <div id="statusMessage" class="status-msg"></div>
+        </div>
+        <div class="button-row">
+          <button type="button" id="testConnectionBtn" class="btn btn-secondary">
+            <span class="btn-spinner" id="testSpinner"></span>
+            <span id="testBtnText">⚡ Test Connection</span>
+          </button>
+          <button type="button" id="saveBtn" class="btn btn-primary">
+            <span>💾 Save Settings</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
-  <script src="options.js"></script>
+
+  <script type="module" src="options.js"></script>
 </body>
 
 </html>

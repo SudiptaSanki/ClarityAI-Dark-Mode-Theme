@@ -1,12 +1,18 @@
 {
   "manifest_version": 3,
-  "name": "ClarityAI",
-  "version": "0.1.0",
-  "description": "Summarize the current page using AI.",
-  "permissions": ["storage", "activeTab", "scripting", "contextMenus", "tabs"],
+  "name": "ClarityAI - Universal AI Summarizer & Consultant",
+  "version": "0.2.0",
+  "description": "Universal AI consultation & webpage summarizer supporting any AI model (Gemini, Groq, OpenRouter, OpenAI, Claude, DeepSeek, Local) with PDF export.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "contextMenus",
+    "tabs",
+    "clipboardWrite"
+  ],
   "host_permissions": [
-    "<all_urls>",
-    "https://generativelanguage.googleapis.com/*"
+    "<all_urls>"
   ],
   "icons": {
     "16": "SmartSummarizer Logo with Paper and Digital Interface.png",
@@ -15,7 +21,8 @@
     "128": "SmartSummarizer Logo with Paper and Digital Interface.png"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "action": {
     "default_popup": "popup/popup.html",
@@ -36,4 +43,3 @@
     }
   ]
 }
-

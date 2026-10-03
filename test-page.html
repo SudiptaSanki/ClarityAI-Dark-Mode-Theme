@@ -3,137 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Page for ClarityAI Extension</title>
+    <title>ClarityAI Universal Test & Demonstration Suite</title>
     <style>
         :root {
-            --bg-primary: #1a1a1a;
-            --bg-secondary: #2d2d2d;
-            --bg-tertiary: #3a3a3a;
-            --text-primary: #ffffff;
-            --text-secondary: #b3b3b3;
-            --text-muted: #888888;
-            --border-primary: #404040;
-            --accent-primary: #1a73e8;
-            --accent-secondary: #ffc107;
-            --success: #4caf50;
-            --warning: #ff9800;
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --border-primary: #30363d;
+            --accent-primary: #1f6feb;
+            --accent-secondary: #58a6ff;
+            --success: #3fb950;
+            --warning: #d29922;
         }
         
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            max-width: 860px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 30px 20px 80px;
             line-height: 1.6;
             background-color: var(--bg-primary);
             color: var(--text-primary);
         }
         
+        header {
+            border-bottom: 2px solid var(--accent-primary);
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+
         h1 {
             color: var(--text-primary);
-            border-bottom: 2px solid var(--accent-primary);
-            padding-bottom: 10px;
+            margin: 0 0 8px;
+            font-size: 26px;
+        }
+
+        .tagline {
+            color: var(--accent-secondary);
+            font-size: 14px;
+            margin: 0;
         }
         
         h2, h3 {
-            color: var(--text-primary);
-        }
-        
-        .content {
-            background: var(--bg-secondary);
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border: 1px solid var(--border-primary);
-        }
-        
-        .highlight {
-            background: var(--bg-tertiary);
-            padding: 15px;
-            border-left: 4px solid var(--accent-secondary);
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        
-        .highlight h3 {
             color: var(--accent-secondary);
             margin-top: 0;
         }
         
+        .content-card {
+            background: var(--bg-secondary);
+            padding: 24px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid var(--border-primary);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+        
+        .highlight-box {
+            background: var(--bg-tertiary);
+            padding: 18px;
+            border-left: 4px solid var(--accent-primary);
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+        
         ul, ol {
             color: var(--text-secondary);
+            padding-left: 20px;
         }
         
         li {
-            margin: 4px 0;
+            margin: 6px 0;
         }
         
         p {
             color: var(--text-secondary);
+            font-size: 14.5px;
         }
         
-        em {
-            color: var(--text-muted);
+        .badge-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 12px 0;
+        }
+
+        .chip {
+            background: #238636;
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .chip.blue {
+            background: #1f6feb;
+        }
+
+        .chip.purple {
+            background: #8957e5;
         }
     </style>
 </head>
 <body>
-    <h1>Test Page for ClarityAI Extension</h1>
+    <header>
+        <h1>ClarityAI Universal Test & Demonstration Suite</h1>
+        <p class="tagline">Verify multi-provider AI consultation, PDF export, and one-click copying</p>
+    </header>
     
-    <div class="content">
-        <h2>About This Page</h2>
-        <p>This is a test page designed to help debug the ClarityAI browser extension. It contains various types of content including text, headings, and structured information that should be easy for the AI to summarize.</p>
+    <div class="content-card">
+        <h2>About This Test Article</h2>
+        <p>Artificial Intelligence architecture has shifted rapidly towards decentralized provider ecosystems. Where developers once depended on single proprietary endpoints with rigid quotas and deprecation cycles, modern applications require total provider and model agnosticism.</p>
         
-        <p>The page includes multiple paragraphs with different topics to test the extension's ability to extract and summarize content from web pages. This should help identify any issues with text extraction or API communication.</p>
+        <p>ClarityAI empowers users to connect any AI model from any provider—including Google Gemini, Groq, OpenRouter, OpenAI, Anthropic Claude, DeepSeek, or self-hosted local LLMs like Ollama—without changing a single line of extension code.</p>
+        
+        <div class="badge-list">
+            <span class="chip">100% Free Groq Support</span>
+            <span class="chip blue">Gemini 2.5 & 1.5</span>
+            <span class="chip purple">OpenRouter 200+ Models</span>
+            <span class="chip blue">One-Click PDF Export</span>
+        </div>
     </div>
     
-    <div class="highlight">
-        <h3>Key Features to Test</h3>
+    <div class="highlight-box">
+        <h3>Strategic Advantages of Multi-Model Architecture</h3>
         <ul>
-            <li>Text extraction from different HTML elements</li>
-            <li>Handling of various content types</li>
-            <li>API communication with Gemini</li>
-            <li>Summary generation and display</li>
-            <li>Error handling and user feedback</li>
+            <li><strong>Zero Vendor Lock-in:</strong> Switch from Gemini to Groq (Llama 3.3 70B) or DeepSeek instantaneously whenever quotas or pricing fluctuate.</li>
+            <li><strong>Complete Cost Control:</strong> Non-coders can easily choose free API keys (Google AI Studio, Groq Console, OpenRouter Free) or plug in high-tier flagship keys as needed.</li>
+            <li><strong>Future-Proof Model Flexibility:</strong> Never be blocked by hardcoded model versions. When a new model releases (e.g. Gemini 3, GPT-5, Llama 4), users simply type the model string in Settings.</li>
+            <li><strong>Executive Consultation Output:</strong> Tailor the analytical output into TL;DR Executive Briefs, Structured Bullets, 4-Part Deep Dive Consultations, or Actionable Checklists.</li>
+            <li><strong>Professional Artifact Export:</strong> Export your generated intelligence directly to a styled, clean PDF or copy clean text/markdown with one click.</li>
         </ul>
     </div>
     
-    <div class="content">
-        <h2>Technical Details</h2>
-        <p>The extension should be able to extract this text content and send it to the Gemini API for summarization. If there are any issues with the API key, rate limiting, or text processing, they should become apparent when testing with this page.</p>
-        
-        <p>This test page contains approximately 200-300 words of meaningful content that should provide a good basis for testing the summarization functionality. The content is structured in a way that makes it easy to verify if the summary is accurate and relevant.</p>
-    </div>
-    
-    <div class="highlight">
-        <h3>Testing Steps</h3>
+    <div class="content-card">
+        <h2>Step-by-Step Extension Testing Checklist</h2>
         <ol>
-            <li>Open this page in your browser</li>
-            <li>Click on the ClarityAI extension icon</li>
-            <li>Ensure your API key is set in the options</li>
-            <li>Click "Test API" to verify connectivity</li>
-            <li>Click "Summarize" to test the full functionality</li>
-            <li>Check the console for any error messages</li>
+            <li><strong>Configure Provider:</strong> Click the ClarityAI icon in the browser toolbar, open <em>Settings</em>, and choose a provider (e.g., Groq with a free key, or Google Gemini).</li>
+            <li><strong>Test Connection:</strong> Hit <em>⚡ Test Connection</em> to confirm your key and model are authenticated.</li>
+            <li><strong>Select Consultation Style:</strong> Try switching between <em>Executive Brief</em>, <em>Key Takeaways (Bullets)</em>, and <em>Deep Dive Consultation</em>.</li>
+            <li><strong>Summarize This Page:</strong> Click <em>✨ Summarize</em>. Confirm that the summary renders with clean bold text and bullet points.</li>
+            <li><strong>Interactive Follow-Up:</strong> In the bottom consultation bar, ask: <em>"What are the main advantages of multi-model architecture?"</em> to test interactive Q&A.</li>
+            <li><strong>Export PDF & Copy:</strong> Click <em>📄 Export PDF</em> to download a clean brief, and <em>📋 Copy All</em> to copy the formatted text.</li>
         </ol>
     </div>
-    
-    <div class="content">
-        <h2>Expected Behavior</h2>
-        <p>When working correctly, the extension should extract the text content from this page, send it to the Gemini API, and return a summary that captures the main points about testing the extension functionality.</p>
-        
-        <p>If there are any issues, the extension should provide clear error messages explaining what went wrong, whether it's an API key problem, rate limiting issue, or content extraction problem.</p>
-    </div>
-    
+
     <script>
-        // Add some dynamic content to test with
         document.addEventListener('DOMContentLoaded', function() {
             const timestamp = new Date().toLocaleString();
-            const footer = document.createElement('div');
-            footer.innerHTML = `<p><em>Page loaded at: ${timestamp}</em></p>`;
-            footer.style.textAlign = 'center';
-            footer.style.marginTop = '40px';
-            footer.style.padding = '20px';
-            footer.style.borderTop = '1px solid #ddd';
+            const footer = document.createElement('footer');
+            footer.innerHTML = `<p style="text-align:center; color:#6e7681; font-size:12px; margin-top:40px;">ClarityAI Test Environment • Loaded at: ${timestamp}</p>`;
             document.body.appendChild(footer);
         });
     </script>
